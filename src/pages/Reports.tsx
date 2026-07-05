@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Download, Filter, Calendar } from 'lucide-react';
+import { Download, Filter } from 'lucide-react';
 import { reportsService } from '../services/reportsService';
 import type { EmployeeReport } from '../types';
 

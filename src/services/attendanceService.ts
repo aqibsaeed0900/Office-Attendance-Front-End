@@ -41,6 +41,8 @@ export const attendanceService = {
     check_out?: string;
     latitude?: number;
     longitude?: number;
+    leave_type?: string;
+    leave_reason?: string;
   }): Promise<Attendance> => {
     const response = await api.post('/attendance/admin-punch', data);
     return response.data.data;

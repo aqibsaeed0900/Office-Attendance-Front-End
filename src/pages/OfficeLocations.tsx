@@ -16,7 +16,6 @@ L.Icon.Default.mergeOptions({
 });
 
 const defaultCenter: [number, number] = [20.5937, 78.9629]; // Default center (India)
-const defaultZoom = 5;
 
 /** Keeps the map centered on the marker when coordinates change externally (e.g., text input) */
 function MapCenterUpdater({ center }: { center: [number, number] }) {

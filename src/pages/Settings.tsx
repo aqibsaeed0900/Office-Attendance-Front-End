@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Clock, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { shiftSettingsService } from '../services/shiftSettingsService';
 import type { ShiftSetting } from '../types';
 
