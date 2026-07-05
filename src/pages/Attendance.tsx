@@ -134,19 +134,19 @@ export default function Attendance() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <p className="text-sm font-medium text-gray-500">Total Days</p>
-                <p className="text-3xl font-bold text-gray-900">{monthlyData.totalDays}</p>
+                <p className="text-3xl font-bold text-gray-900">{monthlyData.total_days}</p>
               </div>
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <p className="text-sm font-medium text-gray-500">Valid Days</p>
-                <p className="text-3xl font-bold text-green-600">{monthlyData.validAttendance}</p>
+                <p className="text-3xl font-bold text-green-600">{monthlyData.valid_days}</p>
               </div>
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <p className="text-sm font-medium text-gray-500">Invalid Days</p>
-                <p className="text-3xl font-bold text-red-600">{monthlyData.invalidAttendance}</p>
+                <p className="text-3xl font-bold text-red-600">{monthlyData.invalid_days}</p>
               </div>
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <p className="text-sm font-medium text-gray-500">Total Hours</p>
-                <p className="text-3xl font-bold text-blue-600">{monthlyData.totalHours.toFixed(1)}</p>
+                <p className="text-3xl font-bold text-blue-600">{(monthlyData.summary?.total_hours || 0).toFixed(1)}</p>
               </div>
             </div>
           )}
