@@ -34,18 +34,6 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function EmployeeRoute({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = authService.isAuthenticated();
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  try {
-    const user = authService.getUser() as User;
-    if (user.role !== 'employee') return <Navigate to="/" replace />;
-  } catch {
-    return <Navigate to="/login" replace />;
-  }
-  return <>{children}</>;
-}
-
 function NotAdminRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = authService.isAuthenticated();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
