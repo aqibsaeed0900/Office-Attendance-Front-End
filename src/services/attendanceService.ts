@@ -27,7 +27,13 @@ export const attendanceService = {
     const response = await api.get(`/attendance/${userId}`, { params });
     const result = response.data;
     const data = Array.isArray(result.data) ? result.data : [];
-    return { records: data };
+    return {
+      records: data,
+      total: result.total || data.length,
+      page: result.page || 1,
+      pageSize: result.pageSize || data.length,
+      totalPages: result.totalPages || 1,
+    };
   },
 
   getMonthlyAttendance: async (userId: number, year: number, month: number): Promise<MonthlyAttendance> => {

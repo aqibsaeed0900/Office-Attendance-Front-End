@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Calendar, MapPin, LogOut, Menu, X, UserCircle, Settings as SettingsIcon, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, MapPin, LogOut, Menu, X, UserCircle, Settings as SettingsIcon, BarChart3, Smartphone, CalendarDays } from 'lucide-react';
 import { authService } from '../services/authService';
 import type { User } from '../types';
 
@@ -24,13 +24,19 @@ export default function Layout({ children }: LayoutProps) {
 
   const menuItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard', adminOnly: false },
-    { path: '/my-attendance', icon: Calendar, label: 'My Attendance', adminOnly: false },
+    { path: '/my-attendance', icon: Calendar, label: 'My Attendance', adminOnly: false, hideForAdmin: true },
     { path: '/users', icon: Users, label: 'Users', adminOnly: true },
     { path: '/attendance', icon: Calendar, label: 'All Attendance', adminOnly: true },
     { path: '/office-locations', icon: MapPin, label: 'Office Locations', adminOnly: true },
     { path: '/shift-settings', icon: SettingsIcon, label: 'Shift Settings', adminOnly: true },
     { path: '/reports', icon: BarChart3, label: 'Reports', adminOnly: true },
-  ].filter(item => !item.adminOnly || isAdmin);
+    { path: '/devices', icon: Smartphone, label: 'Devices', adminOnly: true },
+    { path: '/holidays', icon: CalendarDays, label: 'Holidays', adminOnly: true },
+  ].filter(item => {
+    if (item.hideForAdmin && isAdmin) return false;
+    if (item.adminOnly && !isAdmin) return false;
+    return true;
+  });
 
   const handleLogout = () => {
     authService.logout();

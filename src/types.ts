@@ -119,6 +119,34 @@ export interface EmployeeReport {
   casual_leaves: number;
   total_hours: number;
   avg_hours_per_day: number;
+  holiday_days: number;
+}
+
+// Holiday types
+export interface Holiday {
+  id: number;
+  name: string;
+  date: string;
+  description: string | null;
+  is_recurring_yearly: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Device types
+export interface UserDevice {
+  id: number;
+  user_id: number;
+  device_id: string;
+  device_name: string | null;
+  device_type: string;
+  user_agent: string | null;
+  ip_address: string | null;
+  is_active: number;
+  created_at: string;
+  last_login_at: string;
+  full_name?: string;
+  email?: string;
 }
 
 // API response types

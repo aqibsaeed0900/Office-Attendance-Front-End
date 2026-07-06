@@ -37,7 +37,8 @@ export default function Reports() {
     absent: acc.absent + r.absent_days,
     sick: acc.sick + r.sick_leaves,
     casual: acc.casual + r.casual_leaves,
-  }), { present: 0, late: 0, absent: 0, sick: 0, casual: 0 });
+    holidays: acc.holidays + (r.holiday_days || 0),
+  }), { present: 0, late: 0, absent: 0, sick: 0, casual: 0, holidays: 0 });
 
   return (
     <div>
@@ -80,7 +81,7 @@ export default function Reports() {
 
       {/* Summary Cards */}
       {!loading && reports.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
           <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200 text-center">
             <p className="text-2xl font-bold text-green-600">{totals.present}</p>
             <p className="text-xs text-gray-500">Present</p>
@@ -101,6 +102,10 @@ export default function Reports() {
             <p className="text-2xl font-bold text-purple-600">{totals.casual}</p>
             <p className="text-xs text-gray-500">Casual Leave</p>
           </div>
+          <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-200 text-center">
+            <p className="text-2xl font-bold text-teal-600">{totals.holidays}</p>
+            <p className="text-xs text-gray-500">Holidays</p>
+          </div>
         </div>
       )}
 
@@ -117,14 +122,15 @@ export default function Reports() {
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Sick</th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Casual</th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Hours</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Holidays</th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Avg/Day</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {loading ? (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-500">Loading...</td></tr>
+                <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-500">Loading...</td></tr>
               ) : reports.length === 0 ? (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-500">No data for this period.</td></tr>
+                <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-500">No data for this period.</td></tr>
               ) : (
                 reports.map((r) => (
                   <tr key={r.user_id} className="hover:bg-gray-50">
@@ -142,6 +148,7 @@ export default function Reports() {
                     <td className="px-4 py-3 text-center text-blue-600 font-medium">{r.sick_leaves}</td>
                     <td className="px-4 py-3 text-center text-purple-600 font-medium">{r.casual_leaves}</td>
                     <td className="px-4 py-3 text-center text-gray-900">{r.total_hours.toFixed(1)}</td>
+                    <td className="px-4 py-3 text-center text-teal-600 font-medium">{r.holiday_days ?? 0}</td>
                     <td className="px-4 py-3 text-center text-gray-500">{r.avg_hours_per_day.toFixed(1)}</td>
                   </tr>
                 ))

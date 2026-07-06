@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Filter, ArrowLeft } from 'lucide-react';
+import { Calendar, Filter, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { userService } from '../services/userService';
 import { attendanceService } from '../services/attendanceService';
-import type { User, Attendance, MonthlyAttendance } from '../types';
+import type { User, Attendance } from '../types';
 
 export default function Attendance() {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
-  const [monthlyData, setMonthlyData] = useState<MonthlyAttendance | null>(null);
+  const [monthlyData, setMonthlyData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
 
@@ -27,19 +28,26 @@ export default function Attendance() {
   };
 
   const loadAttendance = async (userId: number) => {
-    setSelectedUser(users.find((u) => u.id === userId) || null);
+    const user = users.find((u) => u.id === userId);
+    setSelectedUser(user || null);
     setLoading(true);
+    setError('');
+    setAttendance([]);
+    setMonthlyData(null);
 
     try {
       // Load daily attendance
       const dailyRes = await attendanceService.getUserAttendance(userId, { pageSize: 100 });
-      setAttendance(dailyRes.records);
+      setAttendance(Array.isArray(dailyRes.records) ? dailyRes.records : []);
 
       // Load monthly data
       const monthlyRes = await attendanceService.getMonthlyAttendance(userId, selectedYear, selectedMonth);
-      setMonthlyData(monthlyRes);
-    } catch (error) {
-      console.error('Error loading attendance:', error);
+      if (monthlyRes) {
+        setMonthlyData(monthlyRes);
+      }
+    } catch (err: any) {
+      console.error('Error loading attendance:', err);
+      setError(err?.response?.data?.message || 'Failed to load attendance records');
     } finally {
       setLoading(false);
     }
@@ -134,20 +142,31 @@ export default function Attendance() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <p className="text-sm font-medium text-gray-500">Total Days</p>
-                <p className="text-3xl font-bold text-gray-900">{monthlyData.total_days}</p>
+                <p className="text-3xl font-bold text-gray-900">{monthlyData.total_days ?? 0}</p>
               </div>
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <p className="text-sm font-medium text-gray-500">Valid Days</p>
-                <p className="text-3xl font-bold text-green-600">{monthlyData.valid_days}</p>
+                <p className="text-3xl font-bold text-green-600">{monthlyData.valid_days ?? 0}</p>
               </div>
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <p className="text-sm font-medium text-gray-500">Invalid Days</p>
-                <p className="text-3xl font-bold text-red-600">{monthlyData.invalid_days}</p>
+                <p className="text-3xl font-bold text-red-600">{monthlyData.invalid_days ?? 0}</p>
               </div>
               <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <p className="text-sm font-medium text-gray-500">Total Hours</p>
-                <p className="text-3xl font-bold text-blue-600">{(monthlyData.summary?.total_hours || 0).toFixed(1)}</p>
+                <p className="text-3xl font-bold text-blue-600">
+                  {(monthlyData.summary?.total_hours || 0).toFixed(1)}
+                </p>
               </div>
+            </div>
+          )}
+
+          {/* Error state */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+              <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+              <p className="text-red-800 font-medium">Error loading data</p>
+              <p className="text-red-600 text-sm mt-1">{error}</p>
             </div>
           )}
 

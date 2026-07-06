@@ -246,27 +246,33 @@ export default function Users() {
                       {new Date(user.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => openPunchModal(user)}
-                        className="text-amber-600 hover:text-amber-800 mr-4"
-                        title="Manual Punch"
-                      >
-                        <Clock className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleToggleStatus(user)}
-                        className="text-blue-600 hover:text-blue-800 mr-4"
-                        title={user.status === 'active' ? 'Deactivate' : 'Activate'}
-                      >
-                        {user.status === 'active' ? <Lock className="w-5 h-5" /> : <Unlock className="w-5 h-5" />}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(user.id, user.full_name)}
-                        className="text-red-600 hover:text-red-800"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                      {user.role !== 'admin' ? (
+                        <>
+                          <button
+                            onClick={() => openPunchModal(user)}
+                            className="text-amber-600 hover:text-amber-800 mr-4"
+                            title="Manual Punch"
+                          >
+                            <Clock className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleToggleStatus(user)}
+                            className="text-blue-600 hover:text-blue-800 mr-4"
+                            title={user.status === 'active' ? 'Deactivate' : 'Activate'}
+                          >
+                            {user.status === 'active' ? <Lock className="w-5 h-5" /> : <Unlock className="w-5 h-5" />}
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user.id, user.full_name)}
+                            className="text-red-600 hover:text-red-800"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-gray-400 text-xs">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}
