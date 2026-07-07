@@ -28,15 +28,16 @@ export default function Dashboard() {
 
   const loadAdminStats = async () => {
     try {
-      const [usersRes, activeUsersRes, locationsRes] = await Promise.all([
-        userService.getUsers({ pageSize: 1 }),
-        userService.getUsers({ status: 'active' }),
+      const [usersRes, locationsRes] = await Promise.all([
+        userService.getUsers(),
         officeLocationService.getOfficeLocations({ isActive: true }),
       ]);
 
+      const activeCount = usersRes.data.filter((u: User) => u.status === 'active').length;
+
       setStats({
         totalUsers: usersRes.total,
-        activeUsers: activeUsersRes.total,
+        activeUsers: activeCount,
         totalAttendance: 0,
         activeOfficeLocations: locationsRes.total,
       });

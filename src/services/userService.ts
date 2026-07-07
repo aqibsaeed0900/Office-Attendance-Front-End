@@ -2,7 +2,7 @@ import api from './api';
 import type { User, CreateUserInput, UpdateUserInput } from '../types';
 
 export const userService = {
-  getUsers: async (params?: { page?: number; pageSize?: number; status?: string; search?: string }) => {
+  getUsers: async (params?: { status?: string; search?: string }) => {
     const response = await api.get('/users', { params });
     const result = response.data;
     const data = Array.isArray(result.data) ? result.data : [];

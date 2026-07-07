@@ -2,7 +2,7 @@ import api from './api';
 import type { OfficeLocation, OfficeLocationFormData } from '../types';
 
 export const officeLocationService = {
-  getOfficeLocations: async (params?: { page?: number; pageSize?: number; isActive?: boolean }) => {
+  getOfficeLocations: async (params?: { isActive?: boolean }) => {
     const response = await api.get('/office-locations', { params });
     const result = response.data;
     const data = Array.isArray(result.data) ? result.data : [];

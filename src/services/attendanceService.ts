@@ -18,22 +18,16 @@ export const attendanceService = {
     return response.data.data;
   },
 
-  getMyAttendance: async (params?: { page?: number; pageSize?: number }) => {
-    const response = await api.get('/attendance/me', { params });
+  getMyAttendance: async () => {
+    const response = await api.get('/attendance/me');
     return response.data;
   },
 
-  getUserAttendance: async (userId: number, params?: { page?: number; pageSize?: number }) => {
-    const response = await api.get(`/attendance/${userId}`, { params });
+  getUserAttendance: async (userId: number) => {
+    const response = await api.get(`/attendance/${userId}`);
     const result = response.data;
     const data = Array.isArray(result.data) ? result.data : [];
-    return {
-      records: data,
-      total: result.total || data.length,
-      page: result.page || 1,
-      pageSize: result.pageSize || data.length,
-      totalPages: result.totalPages || 1,
-    };
+    return { records: data };
   },
 
   getMonthlyAttendance: async (userId: number, year: number, month: number): Promise<MonthlyAttendance> => {

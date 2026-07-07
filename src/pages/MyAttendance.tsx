@@ -13,7 +13,7 @@ export default function MyAttendance() {
 
   const loadMyAttendance = async () => {
     try {
-      const response = await attendanceService.getMyAttendance({ pageSize: 50 });
+      const response = await attendanceService.getMyAttendance();
       const data = Array.isArray(response.data) ? response.data : [];
       setRecords(data);
     } catch (error) {

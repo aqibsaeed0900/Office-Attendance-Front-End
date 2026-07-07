@@ -37,7 +37,7 @@ export default function Attendance() {
 
     try {
       // Load daily attendance
-      const dailyRes = await attendanceService.getUserAttendance(userId, { pageSize: 100 });
+      const dailyRes = await attendanceService.getUserAttendance(userId);
       setAttendance(Array.isArray(dailyRes.records) ? dailyRes.records : []);
 
       // Load monthly data
