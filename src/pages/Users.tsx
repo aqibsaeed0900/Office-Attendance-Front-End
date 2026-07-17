@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Plus, Trash2, Lock, Unlock, Clock } from 'lucide-react';
+import { Search, Plus, Trash2, Lock, Unlock, Clock, CalendarPlus } from 'lucide-react';
 import { userService } from '../services/userService';
 import { attendanceService } from '../services/attendanceService';
 import type { User } from '../types';
@@ -109,6 +109,53 @@ export default function Users() {
         ...prev,
         saving: false,
         error: err.response?.data?.message || 'Failed to punch attendance',
+      }));
+    }
+  };
+
+  // Leave modal state (separate from punch)
+  const [leaveModal, setLeaveModal] = useState<{
+    user: User | null;
+    leaveType: '' | 'sick' | 'casual' | 'annual';
+    startDate: string;
+    endDate: string;
+    leaveReason: string;
+    saving: boolean;
+    error: string;
+  }>({ user: null, leaveType: '', startDate: '', endDate: '', leaveReason: '', saving: false, error: '' });
+
+  const openLeaveModal = (user: User) => {
+    const today = new Date().toISOString().slice(0, 10);
+    setLeaveModal({
+      user,
+      leaveType: '',
+      startDate: today,
+      endDate: today,
+      leaveReason: '',
+      saving: false,
+      error: '',
+    });
+  };
+
+  const handleLeaveSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!leaveModal.user || !leaveModal.leaveType || !leaveModal.startDate || !leaveModal.endDate) return;
+
+    setLeaveModal((prev) => ({ ...prev, saving: true, error: '' }));
+    try {
+      await attendanceService.createLeave({
+        user_id: leaveModal.user.id,
+        leave_type: leaveModal.leaveType as 'sick' | 'casual' | 'annual',
+        start_date: leaveModal.startDate,
+        end_date: leaveModal.endDate,
+        leave_reason: leaveModal.leaveReason || undefined,
+      });
+      setLeaveModal({ user: null, leaveType: '', startDate: '', endDate: '', leaveReason: '', saving: false, error: '' });
+    } catch (err: any) {
+      setLeaveModal((prev) => ({
+        ...prev,
+        saving: false,
+        error: err.response?.data?.message || 'Failed to create leave',
       }));
     }
   };
@@ -250,10 +297,17 @@ export default function Users() {
                         <>
                           <button
                             onClick={() => openPunchModal(user)}
-                            className="text-amber-600 hover:text-amber-800 mr-4"
+                            className="text-amber-600 hover:text-amber-800 mr-3"
                             title="Manual Punch"
                           >
                             <Clock className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => openLeaveModal(user)}
+                            className="text-purple-600 hover:text-purple-800 mr-3"
+                            title="Add Leave"
+                          >
+                            <CalendarPlus className="w-5 h-5" />
                           </button>
                           <button
                             onClick={() => handleToggleStatus(user)}
@@ -281,7 +335,7 @@ export default function Users() {
           </div>
         )}
       </div>
-      {/* Manual Punch Modal */}
+      {/* Manual Punch Modal (Attendance only — no leave) */}
       {punchModal.user && (
         <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -331,43 +385,6 @@ export default function Users() {
                 </p>
               </div>
 
-              {/* Leave Type */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Leave Type <span className="text-gray-400">(optional)</span>
-                </label>
-                <select
-                  value={punchModal.leaveType}
-                  onChange={(e) =>
-                    setPunchModal((prev) => ({ ...prev, leaveType: e.target.value as '' | 'sick' | 'casual' }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">— Regular Attendance —</option>
-                  <option value="sick">🩺 Sick Leave</option>
-                  <option value="casual">🏖️ Casual Leave</option>
-                </select>
-              </div>
-
-              {/* Leave Reason */}
-              {punchModal.leaveType && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Reason <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    required
-                    value={punchModal.leaveReason}
-                    onChange={(e) =>
-                      setPunchModal((prev) => ({ ...prev, leaveReason: e.target.value }))
-                    }
-                    rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter reason for leave..."
-                  />
-                </div>
-              )}
-
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
@@ -384,6 +401,116 @@ export default function Users() {
                   className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors disabled:bg-amber-400 disabled:cursor-not-allowed"
                 >
                   {punchModal.saving ? 'Punching...' : 'Punch Attendance'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Leave Modal (date range) */}
+      {leaveModal.user && (
+        <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Add Leave — {leaveModal.user.full_name}
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">{leaveModal.user.email}</p>
+            </div>
+
+            <form onSubmit={handleLeaveSubmit} className="p-6 space-y-4">
+              {leaveModal.error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+                  {leaveModal.error}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Leave Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  required
+                  value={leaveModal.leaveType}
+                  onChange={(e) =>
+                    setLeaveModal((prev) => ({ ...prev, leaveType: e.target.value as 'sick' | 'casual' | 'annual' }))
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">— Select Leave Type —</option>
+                  <option value="sick">🩺 Sick Leave</option>
+                  <option value="casual">🏖️ Casual Leave</option>
+                  <option value="annual">🏝️ Annual Leave</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={leaveModal.startDate}
+                  onChange={(e) =>
+                    setLeaveModal((prev) => ({ ...prev, startDate: e.target.value }))
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  End Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={leaveModal.endDate}
+                  min={leaveModal.startDate}
+                  onChange={(e) =>
+                    setLeaveModal((prev) => ({ ...prev, endDate: e.target.value }))
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Reason <span className="text-gray-400">(optional)</span>
+                </label>
+                <textarea
+                  value={leaveModal.leaveReason}
+                  onChange={(e) =>
+                    setLeaveModal((prev) => ({ ...prev, leaveReason: e.target.value }))
+                  }
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter reason for leave..."
+                />
+              </div>
+
+              <p className="text-xs text-gray-400">
+                This will create one attendance record per day for the selected date range with the leave type applied.
+              </p>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setLeaveModal({ user: null, leaveType: '', startDate: '', endDate: '', leaveReason: '', saving: false, error: '' })
+                  }
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={leaveModal.saving}
+                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-purple-400 disabled:cursor-not-allowed"
+                >
+                  {leaveModal.saving ? 'Creating...' : 'Create Leave'}
                 </button>
               </div>
             </form>

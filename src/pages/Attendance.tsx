@@ -191,10 +191,13 @@ export default function Attendance() {
                         Check-out
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Location
+                        Office/Duty
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Punctuality
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Source
@@ -202,48 +205,94 @@ export default function Attendance() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {attendance.map((record) => (
+                    {attendance.map((record) => {
+                      // Determine punctuality: late if check-in is after 9:15 AM (9h*60+15min = 555 min)
+                      const checkInDate = new Date(record.check_in);
+                      const checkInMinutes = checkInDate.getHours() * 60 + checkInDate.getMinutes();
+                      const isLate = !record.leave_type && checkInMinutes > 555; // 9:15 AM threshold
+                      const isLeave = !!record.leave_type;
+
+                      return (
                       <tr key={record.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-gray-900">
                           {new Date(record.check_in).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                          {new Date(record.check_in).toLocaleTimeString()}
+                          {isLeave ? '—' : new Date(record.check_in).toLocaleTimeString()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                          {record.check_out
+                          {record.check_out && !isLeave
                             ? new Date(record.check_out).toLocaleTimeString()
-                            : '-'}
+                            : isLeave ? '—' : '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {record.location_lat ? (
+                          {record.office_location_name ? (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                              📍 {record.office_location_name}
+                            </span>
+                          ) : record.location_lat ? (
                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                               record.is_valid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                             }`}>
-                              {record.location_status}
+                              {record.location_status === 'in_office' ? '📍 In Office' : record.location_status || '—'}
+                            </span>
+                          ) : isLeave ? (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                              🏠 On Leave
                             </span>
                           ) : (
                             '-'
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            record.is_valid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}>
-                            {record.is_valid ? 'Valid' : 'Invalid'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {record.source === 'admin' ? (
-                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">
-                              Manual punch by admin
+                          {isLeave ? (
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              record.leave_type === 'sick' ? 'bg-blue-100 text-blue-800' :
+                              record.leave_type === 'casual' ? 'bg-purple-100 text-purple-800' :
+                              'bg-amber-100 text-amber-800'
+                            }`}>
+                              {record.leave_type === 'sick' ? '🩺 Sick' :
+                               record.leave_type === 'casual' ? '🏖️ Casual' :
+                               record.leave_type === 'annual' ? '🏝️ Annual' : record.leave_type}
                             </span>
                           ) : (
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              record.is_valid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {record.is_valid ? 'Valid' : 'Invalid'}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {isLate ? (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                              ⚠️ Late
+                            </span>
+                          ) : isLeave ? (
                             <span className="text-gray-400">—</span>
+                          ) : (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                              ✅ On Time
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {record.source === 'admin' && !isLeave ? (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">
+                              🖊️ Admin
+                            </span>
+                          ) : record.source === 'admin' && isLeave ? (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                              🖊️ Admin Leave
+                            </span>
+                          ) : (
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                              📱 User App
+                            </span>
                           )}
                         </td>
                       </tr>
-                    ))}
+                    )})}
                   </tbody>
                 </table>
               </div>

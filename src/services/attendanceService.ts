@@ -52,4 +52,15 @@ export const attendanceService = {
     const response = await api.post(`/office-locations/${officeLocationId}/check-location`, location);
     return response.data;
   },
+
+  createLeave: async (data: {
+    user_id: number;
+    leave_type: 'sick' | 'casual' | 'annual';
+    start_date: string;
+    end_date: string;
+    leave_reason?: string;
+  }): Promise<Attendance[]> => {
+    const response = await api.post('/attendance/create-leave', data);
+    return response.data.data;
+  },
 };

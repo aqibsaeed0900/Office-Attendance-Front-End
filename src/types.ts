@@ -58,8 +58,9 @@ export interface Attendance {
   is_valid?: boolean;
   location_status?: 'in_office' | 'out_of_office' | 'unknown';
   source?: 'user' | 'admin';
-  leave_type?: 'sick' | 'casual' | null;
+  leave_type?: 'sick' | 'casual' | 'annual' | null;
   leave_reason?: string | null;
+  office_location_name?: string | null;
   created_at: string;
   updated_at?: string;
 }
@@ -117,6 +118,7 @@ export interface EmployeeReport {
   late_days: number;
   sick_leaves: number;
   casual_leaves: number;
+  annual_leaves: number;
   total_hours: number;
   avg_hours_per_day: number;
   holiday_days: number;
