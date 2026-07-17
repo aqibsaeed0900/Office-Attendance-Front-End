@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Filter, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Calendar, Filter, ArrowLeft, AlertTriangle, Download } from 'lucide-react';
 import { userService } from '../services/userService';
 import { attendanceService } from '../services/attendanceService';
 import type { User, Attendance } from '../types';
@@ -106,6 +106,14 @@ export default function Attendance() {
               >
                 <ArrowLeft className="w-5 h-5" />
                 <span>Change User</span>
+              </button>
+              <button
+                onClick={() => attendanceService.exportUserCSV(selectedUser.id)}
+                className="ml-3 text-green-600 hover:text-green-800 flex items-center gap-2 px-3 py-2 border border-green-300 rounded-lg hover:bg-green-50 transition-colors"
+                title="Export all attendance as CSV"
+              >
+                <Download className="w-5 h-5" />
+                <span>Export CSV</span>
               </button>
             </div>
           </div>

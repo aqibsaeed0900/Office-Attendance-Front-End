@@ -63,4 +63,26 @@ export const attendanceService = {
     const response = await api.post('/attendance/create-leave', data);
     return response.data.data;
   },
+
+  exportUserCSV: (userId: number) => {
+    const token = localStorage.getItem('token');
+    const url = `${import.meta.env.VITE_API_BASE_URL || ''}/attendance/${userId}/export`;
+    // Use fetch to trigger file download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `attendance-user-${userId}.csv`;
+    // Add auth via query param fallback — use fetch + blob for proper auth
+    fetch(url, {
+      headers: { Authorization: `Bearer ${token}`, 'x-device-id': localStorage.getItem('device_id') || '', 'x-device-name': 'Web Browser' },
+    })
+      .then(res => res.blob())
+      .then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = blobUrl;
+        anchor.download = `attendance-user-${userId}.csv`;
+        anchor.click();
+        URL.revokeObjectURL(blobUrl);
+      });
+  },
 };
